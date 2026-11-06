@@ -31,9 +31,9 @@ jobs:
       - name: Generar OpenCore para MacBookPro13,3
         run: python3 OpenCore-Patcher-GUI.command --build --model MacBookPro13,3
 
-      - name: Verificar contenido EFI
+      - name: Verificar arranque Apple EFI y configuracion OpenCore
         run: |
-          test -f Build-Folder/OpenCore-Build/EFI/BOOT/BOOTx64.efi
+          test -f Build-Folder/OpenCore-Build/System/Library/CoreServices/boot.efi
           test -f Build-Folder/OpenCore-Build/EFI/OC/OpenCore.efi
           test -f Build-Folder/OpenCore-Build/EFI/OC/config.plist
           python3 - <<'PY'
@@ -45,7 +45,7 @@ jobs:
           print("EFI verificada para MacBookPro13,3")
           PY
 
-      - name: Publicar USB EFI
+      - name: Publicar paquete USB con EFI y System
         uses: actions/upload-artifact@v4
         with:
           name: OpenCore-MacBookPro13-3-USB
