@@ -9,7 +9,7 @@ permissions:
 jobs:
   generar-efi:
     runs-on: macos-15-intel
-    timeout-minutes: 50
+    timeout-minutes: 20
     steps:
       - name: Obtener OpenCore Legacy Patcher oficial v2.5.1
         uses: actions/checkout@v4
@@ -27,9 +27,6 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install -r requirements.txt
-
-      - name: Preparar recursos oficiales de OpenCore
-        run: python3 Build-Project.command --run-as-individual-steps --prepare-assets
 
       - name: Generar OpenCore para MacBookPro13,3
         run: python3 OpenCore-Patcher-GUI.command --build --model MacBookPro13,3
@@ -52,7 +49,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: OpenCore-MacBookPro13-3-USB
-          path: Build-Folder/OpenCore-Build/EFI
+          path: Build-Folder/OpenCore-Build/
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 30
