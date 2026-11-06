@@ -1,0 +1,58 @@
+name: Recuperar OpenCore - MacBook Pro 2016
+on:
+  push:
+    branches:
+      - rescue/opencore-macbookpro13-3
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  generar-efi:
+    runs-on: macos-15-intel
+    timeout-minutes: 50
+    steps:
+      - name: Obtener OpenCore Legacy Patcher oficial v2.5.1
+        uses: actions/checkout@v4
+        with:
+          repository: dortania/OpenCore-Legacy-Patcher
+          ref: 2.5.1
+
+      - name: Preparar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar dependencias oficiales
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements.txt
+
+      - name: Preparar recursos oficiales de OpenCore
+        run: python3 Build-Project.command --run-as-individual-steps --prepare-assets
+
+      - name: Generar OpenCore para MacBookPro13,3
+        run: python3 OpenCore-Patcher-GUI.command --build --model MacBookPro13,3
+
+      - name: Verificar contenido EFI
+        run: |
+          test -f Build-Folder/OpenCore-Build/EFI/BOOT/BOOTx64.efi
+          test -f Build-Folder/OpenCore-Build/EFI/OC/OpenCore.efi
+          test -f Build-Folder/OpenCore-Build/EFI/OC/config.plist
+          python3 - <<'PY'
+          import plistlib
+          from pathlib import Path
+          p = Path("Build-Folder/OpenCore-Build/EFI/OC/config.plist")
+          cfg=plistlib.loads(p.read_bytes())
+          assert cfg["#Revision"]["Original-Model"] == "MacBookPro13,3", cfg["#Revision"]
+          print("EFI verificada para MacBookPro13,3")
+          PY
+
+      - name: Publicar USB EFI
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenCore-MacBookPro13-3-USB
+          path: Build-Folder/OpenCore-Build/EFI
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
